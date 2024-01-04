@@ -2,21 +2,22 @@
 
 
 
-SELECT name, max(times) FROM track t 
-GROUP BY name
-LIMIT 1;
+SELECT name,times FROM track 
+GROUP BY name,times 
+HAVING times = (SELECT max(times) FROM track) 
+ORDER BY name;
 
 SELECT name, times FROM track
 WHERE times > 210;
 
 SELECT name, year_of_relase FROM collection
-WHERE year_of_relase > 2017 AND year_of_relase < 2021;
+WHERE year_of_relase BETWEEN 2018 AND 2020;
 
 SELECT name FROM musicain
 WHERE NOT name LIKE '%% %%';
 
 SELECT name FROM track 
-WHERE name LIKE '%My%' OR name LIKE '%мой%'
+WHERE name iLIKE '%my%' OR name LIKE '%мой%'
 
 
 
@@ -40,9 +41,12 @@ GROUP BY a.name
 ORDER BY avg(times) DESC;
 
 SELECT m.name FROM musicain m 
+WHERE m.name NOT IN (
+SELECT DISTINCT m.name FROM musicain m
 JOIN musicainalbum ma  ON m.id = ma.musicain_id 
 JOIN album a  ON a.id = ma.album_id  
-WHERE NOT year_of_realese = 2020;
+WHERE a.year_of_realese = 2020)
+ORDER BY m.name;
 
 SELECT DISTINCT c.name FROM collection c 
 LEFT JOIN collectiontrack ct ON c.id = ct.collection_id 
@@ -73,13 +77,13 @@ LEFT JOIN collectiontrack ct ON t.id = ct.track_id
 WHERE ct.track_id IS NULL
 
 
-SELECT m.name, min(t.times) FROM musicain m 
-LEFT JOIN musicainalbum ma ON ma.musicain_id = m.id 
-LEFT JOIN album a ON ma.album_id = a.id 
-LEFT JOIN track t ON t.album_id = a.id 
-GROUP BY m.name 
-ORDER BY min(t.times)
-LIMIT 1;
+SELECT m.name, t.times FROM track t 
+LEFT JOIN album a ON t.album_id = a.id
+LEFT JOIN musicainalbum ma ON ma.musicain_id = a.id
+LEFT JOIN musicain m  ON ma.musicain_id = m.id 
+GROUP BY m.name, t.times 
+HAVING t.times =(SELECT min(times) FROM track)
+ORDER BY m.name;
 
 
 SELECT DISTINCT a.name FROM album a 
